@@ -25,6 +25,7 @@ pydantic_core==2.27.2
 pylibdmtx==0.1.10
 python-barcode==0.15.1
 python-dotenv==1.0.1
+pyzbar==0.1.9
 qrcode==8.0
 setuptools==75.6.0
 six==1.17.0
