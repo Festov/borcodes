@@ -30,15 +30,16 @@ class Form(StatesGroup):
 
 @form_router.message(CommandStart())
 @form_router.message(F.text == "Старт")
-async def process_name(message: Message, state: FSMContext) -> None:
+async def start_process(message: Message, state: FSMContext) -> None:
     await state.set_state(Form.chooseform)
     await message.answer(
-        f"Привет, <b>{(message.from_user.first_name)}</b>!\nЯ могу создавать штрихкоды по введенному тексту и искать штрихкоды на приклепленной картинки и объединять все в один.\nВажно выбрать нужный тип кодов!",
+        f"Привет, <b>{(message.from_user.first_name)}</b>!\nЯ могу создавать штрихкоды по введенному тексту и искать штрихкоды на приклепленной картинке и объединять всё в один.\nВажно выбрать нужный тип кодов!",
         reply_markup=ReplyKeyboardMarkup(
             keyboard=[
                 [
                     KeyboardButton(text="Декодинг Матрикс-кодов"),
                     KeyboardButton(text="Декодинг остальных кодов"),
+                    KeyboardButton(text="Помощь"),
                 ]
             ],
             resize_keyboard=True,
@@ -51,7 +52,7 @@ async def cancel_handler(message: Message, state: FSMContext) -> None:
     current_state = await state.get_state()
     if current_state is None:
         return
-    logging.info("Cancelling state %r", current_state)
+    logging.info("cancel state %r", current_state)
     await state.clear()
     await message.answer(
         "Действие отменено.\n\nнажми Старт, чтобы вернуться в главное меню!",
@@ -87,7 +88,17 @@ async def process_scan_datam(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         ),
     )
-
+@form_router.message(Form.chooseform, F.text == "Помощь")
+async def process_scan_datam(message: Message, state: FSMContext) -> None:
+    await message.answer_photo(photo=FSInputFile("decode/example-othercodes.jpg"), caption='Вот так выглядят "остальные" штрихкоды.'),
+    await message.answer_photo(photo=FSInputFile("decode/example-dm.png"), caption='Вот так выглядит Матрикс-код.'),
+    await message.answer(
+        "Если есть вопросы - подойди к технологу!\n\nЧтобы вернуться, нажми Отменить",
+            reply_markup=ReplyKeyboardMarkup(
+            keyboard=[[KeyboardButton(text="Отменить"),]],
+            resize_keyboard=True,
+        ),
+    )
 @form_router.message(Form.barcode_other)
 async def process_create_qrcode(message: Message, state: FSMContext) -> None:
     await state.update_data(barcode_other=message)
